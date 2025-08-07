@@ -3,20 +3,22 @@ import uvicorn
 
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
+
 from fastapi import Body, FastAPI, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+
 from typing import List
 from uuid import UUID
 
 import app.schemas.calculation as calcs
 from app.auth.dependencies import get_current_active_user
 from app.database_client import DatabaseClient
-from app.models.user import User
 from app.models.calculation import Calculation
+from app.models.user import User
 from app.schemas.user import AuthToken, UserRecord
 from app.schemas.user_form import UserCreate, UserLoginForm
 
