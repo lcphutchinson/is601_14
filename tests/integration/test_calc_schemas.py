@@ -62,6 +62,7 @@ def test_calc_record_properties():
         "user_id": uuid4(),
         "type": "Addition",
         "inputs": [1, 2],
+        "result": 3,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
@@ -71,6 +72,7 @@ def test_calc_record_properties():
     assert isinstance(calc_record.user_id, UUID)
     assert 1 in calc_record.inputs
     assert 2 in calc_record.inputs
+    assert calc_record.result == 3
     assert isinstance(calc_record.created_at, datetime)
     assert isinstance(calc_record.updated_at, datetime)
 

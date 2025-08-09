@@ -5,7 +5,7 @@ import uuid
 from abc import abstractmethod
 from datetime import datetime, timezone
 from functools import reduce
-from sqlalchemy import Column, DateTime, ForeignKey, JSON, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, JSON, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import relationship
 
@@ -24,6 +24,7 @@ class Calculation(ModelBase):
     user_id     = Column(PG_UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     type        = Column(String(50), nullable=False)
     inputs      = Column(JSON, nullable=False)
+    result       = Column(Float, nullable=True)
     created_at  = Column(DateTime, default=aware_now, nullable=False)
     updated_at  = Column(DateTime, default=aware_now, onupdate=aware_now, nullable=False)
 
