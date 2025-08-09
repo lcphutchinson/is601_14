@@ -154,6 +154,7 @@ def create_calculation(
             user_id=current_user.id,
             inputs=calc_data.inputs,
         )
+        new_calculation.result = new_calculation.get_result()
         
         db.add(new_calculation)
         db.commit()

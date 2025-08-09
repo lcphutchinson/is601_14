@@ -89,6 +89,12 @@ class CalculationRecord(CalculationForm):
         description="Unique identifier for the user associated with this record",
         example="123e4567-e89b-12d3-a456-426614174000"
     )
+    result: float = pyd.Field(
+        ...,
+        description="Result value for this record",
+        example=45.5
+    )
+
     created_at: datetime = pyd.Field(..., description="Date and Time of this record's entry")
     updated_at: datetime = pyd.Field(..., description="Date and Time of this record's last update")
 
