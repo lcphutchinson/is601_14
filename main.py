@@ -65,6 +65,20 @@ def get_register_page(request: Request):
 def get_dashboard_page(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
+@app.get("/dashboard/view/{calc_id}", response_class=HTMLResponse, tags=["web"])
+def get_calculation_view(request: Request, calc_id: str):
+    return templates.TemplateResponse(
+        "view_calculation.html",
+        {"request": request, "calc_id": calc_id}
+    )
+
+@app.get("/dashboard/edit/{calc_id}", response_class=HTMLResponse, tags=['web'])
+def get_calculation_edit(request: Request, calc_id: str):
+    return templates.TemplateResponse(
+        "edit_calculation.html",
+        {"request": request, "calc_id": calc_id}
+    )
+
 # ----------------------------------------
 # Health Endpoint
 # ----------------------------------------
@@ -180,7 +194,7 @@ def list_calculations(
         Calculation.user_id == current_user.id).all()
     return calculations
 
-# READ ONE
+# READ ONE 
 @app.get(
     "/calculations/{calc_id}",
     response_model=calcs.CalculationRecord,
@@ -199,7 +213,7 @@ def get_calculation(
         )
     calculation = db.query(Calculation).filter(
         Calculation.id == calc_uuid,
-        Calculation.user_id == current_user_id
+        Calculation.user_id == current_user.id
     ).first()
     if not calculation:
         raise HTTPException(

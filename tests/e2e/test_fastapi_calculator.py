@@ -42,6 +42,7 @@ def registered_test_user(base_url: str, db_session):
 
 @pytest.fixture
 def user_auth(base_url: str, registered_test_user):
+    """Provides the json response associated with user auth"""
     login_url = f"{base_url}/auth/login"
 
     payload = {
@@ -157,6 +158,38 @@ def test_login_bad_password(base_url: str, registered_test_user):
 # --------------------------------------------------------------
 # Calculations Endpoints
 # --------------------------------------------------------------
+@pytest.fixture
+def calc_history(base_url, user_auth, db_session):
+    """Wraps user_auth with an arbitrary calculation history"""
+    user_data = user_auth["user"]
+    user = db_session.query(User).filter(
+        User.username == user_data.get("username")
+    ).first()
+
+    access_token = user_auth["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/calculations"
+    types = [
+        ("Addition", 12),
+        ("Subtraction", 4),
+        ("Multiplication", 32),
+        ("Division", 2),
+        ("Modulus", 0)
+    ]
+    for calc_type, result in types:
+        payload = {
+            "type": calc_type,
+            "inputs": [8, 4],
+            "result": result,
+            "user_id": str(user.id)
+        }
+        response = requests.post(url, json=payload, headers=headers)
+        assert response.status_code == 201, (
+            f"calc_history seeding failed for {calc_type} seed. "
+            f"Response: {response.text}"
+        )
+    return user_auth
+
 @pytest.mark.parametrize(
     "type", [
         ("Addition"),
@@ -187,3 +220,37 @@ def test_create_calculations(base_url: str, user_auth, db_session, type):
     )
     data = response.json()
     
+def test_browse(base_url: str, calc_history, db_session):
+    """Tests the browse endpoint for proper list retrieval"""
+    user_data = calc_history["user"]
+    user = db_session.query(User).filter(
+        User.username == user_data.get("username")
+    ).first()
+
+    access_token = calc_history["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/calculations"
+    payload = {"user_id": str(user.id)}
+    response = requests.get(url, json=payload, headers=headers)
+
+    assert response.status_code == 200, (
+        f"Calculations Browse operation failed: {response.text}"
+    )
+    calcs = response.json()
+    assert len(calcs) == 5
+    results = []
+    for calc in calcs:
+        results.append((calc.get("type"), calc.get("result")))
+        calc_data = calc.items()
+        assert ("user_id", str(user.id)) in calc_data
+        assert ("inputs", [8, 4]) in calc_data
+    assert results == [
+        ("addition", 12),
+        ("subtraction", 4),
+        ("multiplication", 32),
+        ("division", 2),
+        ("modulus", 0)
+    ], f"Compiled type/result data not matching controls: {results}"
+
+
+
