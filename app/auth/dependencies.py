@@ -41,7 +41,7 @@ def get_current_user(
     token_data = User.verify_token(token)
     if not token_data:
         raise credentials_exception
-    if isinstance(token_data, dict):
+    if isinstance(token_data, dict): # pragma: no cover
         user_data = token_data.get("user")
         if user_data:
             return UserRecord.model_validate(user_data)

@@ -251,6 +251,7 @@ def update_calculation(
         )
     if calculation_update.inputs:
         calculation.inputs = calculation_update.inputs
+        calculation.result = calculation.get_result()
     calculation.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(calculation)

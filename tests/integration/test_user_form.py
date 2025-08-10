@@ -81,6 +81,29 @@ def test_user_create_properties():
     assert user_create.username == "janedoe"
     assert user_create.password == "SecurePass123"
 
+def test_confirm_password_constraint():
+    """Tests error handling in the case of bad password confirmation"""
+    # PasswordUpdate
+    data = {
+        "current_password": "SecurePass123",
+        "password": "SecurePass1234",
+        "confirm_password": "SecurePass1235"
+    }
+    with pytest.raises(ValueError, match="Password inputs do not match"):
+        forms.PasswordUpdate(**data)
+    # UserCreate
+    data.pop("current_password")
+    user_data = {
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "email": "jane.doe@example.com",
+        "username": "janedoe",
+    }
+    data.update(user_data)
+    with pytest.raises(ValueError, match="Password inputs do not match"):
+        forms.UserCreate(**data)
+
+    
 def test_user_login_form_properties():
     """Validates the UserLoginForm schema's properties and constructor"""
     data = { 

@@ -160,7 +160,7 @@ def test_login_bad_password(base_url: str, registered_test_user):
 # --------------------------------------------------------------
 @pytest.fixture
 def calc_history(base_url, user_auth, db_session):
-    """Wraps user_auth with an arbitrary calculation history"""
+    """Provides user_auth associated with an arbitrary Calculation history"""
     user_data = user_auth["user"]
     user = db_session.query(User).filter(
         User.username == user_data.get("username")
@@ -189,6 +189,29 @@ def calc_history(base_url, user_auth, db_session):
             f"Response: {response.text}"
         )
     return user_auth
+
+@pytest.fixture
+def test_calculation(base_url, calc_history, db_session):
+    """Provides the id for a single calculation from seeded test data"""
+    user_data = calc_history["user"]
+    user = db_session.query(User).filter(
+        User.username == user_data.get("username")
+    ).first()
+
+    access_token = calc_history["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/calculations"
+    payload = {"user_id": str(user.id)} 
+    response = requests.get(url, json=payload, headers=headers)
+
+    calc = next(
+        (calc for calc in response.json() if calc.get("type") == "addition"),
+        None
+    )
+    assert calc, f"test_calculation GET response invalid: {response.text}"
+    calc_id = calc.get("id")
+    assert calc_id, f"test_calculation GET response malformed: {str(calc)}"
+    return str(calc_id)
 
 @pytest.mark.parametrize(
     "type", [
@@ -219,7 +242,7 @@ def test_create_calculations(base_url: str, user_auth, db_session, type):
         f"{type} Calculation failed with message: {response.text}"
     )
     data = response.json()
-    
+
 def test_browse(base_url: str, calc_history, db_session):
     """Tests the browse endpoint for proper list retrieval"""
     user_data = calc_history["user"]
@@ -252,5 +275,41 @@ def test_browse(base_url: str, calc_history, db_session):
         ("modulus", 0)
     ], f"Compiled type/result data not matching controls: {results}"
 
+def test_update(base_url: str, calc_history, test_calculation, db_session):
+    """Tests the edit endpoint for proper input and result updates"""
+    user_data = calc_history["user"]
+    user = db_session.query(User).filter(
+        User.username == user_data.get("username")
+    ).first()
+
+    access_token = calc_history["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/calculations/{test_calculation}"
+    payload = {"inputs": [8, 6]}
+    response = requests.put(url, json=payload, headers=headers)
+    assert response.status_code == 200, \
+        f"Update operation failed with response: {response.text}"
+    new_calc = response.json()
+    assert new_calc.get("inputs") == [8, 6]
+    assert new_calc.get("result") == 14
+
+def test_delete(base_url: str, calc_history, test_calculation, db_session):
+    """Tests the delete endpoint for proper calculation removal"""
+    user_data = calc_history["user"]
+    user = db_session.query(User).filter(
+        User.username == user_data.get("username")
+    ).first()
+
+    access_token = calc_history["access_token"]
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/calculations/{test_calculation}"
+    response = requests.delete(url, headers=headers)
+    assert response.status_code == 204, \
+        f"Delete operation failed with response: {response.text}"
+    calc = db_session.query(Calculation).filter(
+        Calculation.id == test_calculation
+    ).first()
+
+    assert not calc, f"Id for DELETE target still present in DB: {str(calc)}"
 
 

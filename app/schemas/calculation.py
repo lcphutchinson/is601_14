@@ -121,13 +121,6 @@ class CalculationUpdate(pyd.BaseModel):
         min_items=2
     )
 
-    @pyd.model_validator(mode="after")
-    def validate_inputs(self) -> "CalculationUpdate":
-        """Validate new inputs, if any"""
-        if self.inputs and len(self.inputs) < 2:
-            raise ValueError("Calculation requires at least 2 operands")
-        return self
-
     model_config = pyd.ConfigDict(
         from_attributes=True,
         json_schema_extra={"example": {"inputs": [48, 8]}}
