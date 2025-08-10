@@ -5,7 +5,7 @@ from datetime import datetime
 from pydantic import ValidationError
 from uuid import UUID, uuid4
 
-from app.schemas.calculation import CalculationForm, CalculationRecord
+from app.schemas.calculation import CalculationForm, CalculationRecord, CalculationUpdate
 
 def test_calc_form_properties():
     """Validates CalculationForm properties and constructor"""
@@ -30,6 +30,7 @@ def test_calc_form_invalid_type():
 
 def test_calc_form_short_inputs():
     """Checks Error handling on the model validator for short input lists"""
+    # CalculationForm
     data = {
         "type": "Addition",
         "inputs": [1],
