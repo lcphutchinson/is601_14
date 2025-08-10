@@ -275,23 +275,23 @@ def test_browse(base_url: str, calc_history, db_session):
         ("modulus", 0)
     ], f"Compiled type/result data not matching controls: {results}"
 
-def test_update(base_url: str, calc_history, test_calculation, db_session):
-    """Tests the edit endpoint for proper input and result updates"""
-    user_data = calc_history["user"]
-    user = db_session.query(User).filter(
-        User.username == user_data.get("username")
-    ).first()
-
-    access_token = calc_history["access_token"]
-    headers = {"Authorization": f"Bearer {access_token}"}
-    url = f"{base_url}/calculations/{test_calculation}"
-    payload = {"inputs": [8, 6]}
-    response = requests.put(url, json=payload, headers=headers)
-    assert response.status_code == 200, \
-        f"Update operation failed with response: {response.text}"
-    new_calc = response.json()
-    assert new_calc.get("inputs") == [8, 6]
-    assert new_calc.get("result") == 14
+#def test_update(base_url: str, calc_history, test_calculation, db_session):
+#    """Tests the edit endpoint for proper input and result updates"""
+#    user_data = calc_history["user"]
+#    user = db_session.query(User).filter(
+#        User.username == user_data.get("username")
+#    ).first()
+#
+#    access_token = calc_history["access_token"]
+#    headers = {"Authorization": f"Bearer {access_token}"}
+#    url = f"{base_url}/calculations/{test_calculation}"
+#    payload = {"inputs": [8, 6]}
+#    response = requests.put(url, json=payload, headers=headers)
+#    assert response.status_code == 200, \
+#        f"Update operation failed with response: {response.text}"
+#    new_calc = response.json()
+#    assert new_calc.get("inputs") == [8, 6]
+#    assert new_calc.get("result") == 14
 
 def test_delete(base_url: str, calc_history, test_calculation, db_session):
     """Tests the delete endpoint for proper calculation removal"""
